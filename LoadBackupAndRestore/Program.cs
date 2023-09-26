@@ -357,7 +357,6 @@ namespace LoadBackupAndRestore
         static void GetUser(string SQLServerName, ref string CurrentUser, ref string CurrentPass)
         {
             string connectionString = "Server=" + SQLServerName + ";Database=Util; Integrated Security=SSPI;";
-            //string SQLString = "SELECT [user], [password] FROM [Util].[dbo].[Users];";
             string SQLString = "SELECT [user], dbo.Decrypt([password]) [password] FROM [Util].[dbo].[SMTPUsers];";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
