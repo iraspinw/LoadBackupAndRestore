@@ -216,7 +216,7 @@ namespace LoadBackupAndRestore
                                 sw.WriteLine(result);
                                 sw.Close();
 
-                                SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore", 
+                                SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore success", 
                                     result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                             }
                             else 
