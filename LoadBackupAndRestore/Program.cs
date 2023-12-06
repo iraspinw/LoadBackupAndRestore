@@ -47,6 +47,8 @@ namespace LoadBackupAndRestore
             string RestoreDatabaseLogFile = LogsFolder + "DatabaseRestoreLog.txt";
             string url = "https://portals.cietrade.com/WilmingtonGroup/DatabaseBackups/";
             string UpdateTablesFromStage = Backupfolder + "cdb_Wilmington_TablesUpdate2.sql";
+            string UpdateTablesFileName = BaseFolder + "UpdateTables.bat";
+            string UpdateTablesProcedure = "dbo.UpdateTables";
             string CietradeBackupFile;
             string DownloadFileName;
             string BackupFileNameFromPortal;
@@ -209,10 +211,22 @@ namespace LoadBackupAndRestore
                         {
                             if (RestoreOK)
                             {
-                                RunUpdateTablesFromStage(UpdateTablesFromStage, SQLServerName, UtilityName);
+                                //12/06/23
+                                //RunUpdateTablesFromStage(UpdateTablesFromStage, SQLServerName, UtilityName);
+                                //
+
+                                //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure);
+
+                                //12/06/23
+                                RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
+
+                                // 12/05/23
+                                //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
 
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
-                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " on " + localDate.ToString() + " and tables in " + TargetDatabase + " were updated." ;
+                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " on " + localDate.ToString() 
+                                    + " and script to update tables in " + TargetDatabase 
+                                    + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
                                 sw.Close();
 
@@ -299,6 +313,26 @@ namespace LoadBackupAndRestore
             {
                 RestoreDatabase.StartInfo.FileName = UtilityName;
                 RestoreDatabase.StartInfo.Arguments = "-S " + server + " -i " + script;
+                RestoreDatabase.StartInfo.UseShellExecute = false;
+                RestoreDatabase.StartInfo.RedirectStandardOutput = true;
+
+                RestoreDatabase.Start();
+
+                //RestoreDatabase.WaitForExit();
+            }
+        }
+
+        static void RunUpdateTablesFromStage2(string server, string UtilityName, string TargetDatabase)
+        //static void RunUpdateTablesFromStage2(string UpdateTablesFileName)
+        {
+            using (Process RestoreDatabase = new Process())
+            {
+                //sqlcmd -E -S WPGTESTSQL -d cdb_Wilmington -Q "EXEC dbo.UpdateTables"
+                //UpdateTablesFileName
+                // " -E -S " + server + " -d " + TargetDatabase + " -Q " + @"""EXEC dbo.UpdateTables""";
+                string arguments = " -E -S " + server + " -d " + TargetDatabase + " -Q " + @"""EXEC dbo.UpdateTables""";
+                RestoreDatabase.StartInfo.FileName = UtilityName; // UpdateTablesFileName;
+                RestoreDatabase.StartInfo.Arguments = arguments; 
                 RestoreDatabase.StartInfo.UseShellExecute = false;
                 RestoreDatabase.StartInfo.RedirectStandardOutput = true;
 
@@ -450,6 +484,33 @@ namespace LoadBackupAndRestore
             var resultSync = await agent.SynchronizeAsync();
 
             Console.WriteLine(resultSync);
+        }
+
+        private static async Task RunStoredProcedure(string SQLServerName, string Database, string ProcName)
+        {
+            string connectionString = "Server=" + SQLServerName + ";Database=" + Database +";Integrated Security=SSPI;";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                //connection.Open();
+                await connection.OpenAsync();
+                SqlCommand sql_cmnd = new SqlCommand(ProcName, connection);
+                sql_cmnd.CommandType = CommandType.StoredProcedure;
+
+                //sql_cmnd.CommandText = "msdb.dbo.sp_start_job";
+
+
+                sql_cmnd.CommandTimeout = 600; //Maybe increased as database tables grow
+                //sql_cmnd.Parameters.AddWithValue("@job_name", ProcName); //"Update cdb_Wilmington tables"
+
+                //sql_cmnd.Parameters.AddWithValue("@FIRST_NAME", SqlDbType.NVarChar).Value = firstName;
+                //sql_cmnd.Parameters.AddWithValue("@LAST_NAME", SqlDbType.NVarChar).Value = lastName;
+                //sql_cmnd.Parameters.AddWithValue("@AGE", SqlDbType.Int).Value = age;
+
+                await sql_cmnd.ExecuteNonQueryAsync();
+
+                //sql_cmnd.ExecuteNonQuery();
+                //connection.Close();
+            }
         }
     }
 }
