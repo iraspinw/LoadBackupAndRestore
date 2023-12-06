@@ -174,7 +174,7 @@ namespace LoadBackupAndRestore
 
                 string[] dirs = Directory.GetFiles(Backupfolder, pattern);
 
-                Console.WriteLine("\nThe number of matching bak files in " + Backupfolder + " folder is {0}. On {1}, should be 1. Remove unneccessary files from " + Backupfolder + ", except the latest one.", dirs.Length, DateTime.Now.ToString());
+                //Console.WriteLine("\nThe number of matching bak files in " + Backupfolder + " folder is {0}. On {1}, should be 1. Remove unneccessary files from " + Backupfolder + ", except the latest one.", dirs.Length, DateTime.Now.ToString());
 
                 if (dirs.Length > 1)
                 {
