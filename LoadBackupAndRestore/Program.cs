@@ -217,7 +217,7 @@ namespace LoadBackupAndRestore
 
                                 //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure);
 
-                                //12/06/23
+                                //12/06/23 Update cdb_Wilmington tables from cdb_wilmington_Stage
                                 RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
 
                                 // 12/05/23
