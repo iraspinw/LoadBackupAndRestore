@@ -31,7 +31,7 @@ namespace LoadBackupAndRestore
             string SQLServerName = "WPGTESTSQL";
             string DatabaseToRestore = "cdb_Wilmington_stage";  //or "cdb_Wilmington_08_03"; 
             string TargetDatabase = "cdb_Wilmington";
-            string TestDatabase = "cdb_Wilmington_Test";
+            //string TestDatabase = "cdb_Wilmington_Test";
             string UtilityName = "sqlcmd.exe";
             string BaseFolder = @"C:\Users\Admin\";
             string Backupfolder = BaseFolder + @"Downloads\";
