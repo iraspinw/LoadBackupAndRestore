@@ -220,7 +220,19 @@ namespace LoadBackupAndRestore
                                 //12/06/23 Update cdb_Wilmington tables from cdb_wilmington_Stage
                                 RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
 
-                                // 12/05/23
+                                //Run SQL Server procedure to update table for Suppliers Analysis report - Cietrade part
+                                //RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
+                                //" ", 0, 0, "SHIP", 0, " ").Wait();
+
+                                //EXEC [dbo].[cw_RptPurchasesBySupplier2CietradeAndWildCombined] '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
+
+                                //Run SQL Server procedure to update table for Customers Analysis report - Cietrade part
+                                //RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
+                                //                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
+
+                                //EXEC dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined '', '', '', '', '', '', '', 'L', 0, ''
+
+                                //12/05/23
                                 //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
 
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
@@ -501,6 +513,116 @@ namespace LoadBackupAndRestore
 
                 sql_cmnd.CommandTimeout = 600; //Maybe increased as database tables grow
                 //sql_cmnd.Parameters.AddWithValue("@job_name", ProcName); //"Update cdb_Wilmington tables"
+
+                //sql_cmnd.Parameters.AddWithValue("@FIRST_NAME", SqlDbType.NVarChar).Value = firstName;
+                //sql_cmnd.Parameters.AddWithValue("@LAST_NAME", SqlDbType.NVarChar).Value = lastName;
+                //sql_cmnd.Parameters.AddWithValue("@AGE", SqlDbType.Int).Value = age;
+
+                await sql_cmnd.ExecuteNonQueryAsync();
+
+                //sql_cmnd.ExecuteNonQuery();
+                //connection.Close();
+            }
+        }
+
+        private static async Task RunStoredProcedureSuppliers(string SQLServerName, string Database, string ProcName, string FromDt, string ToDt, string FilterDept, string TradeType, string UOM,
+                                                              string CPID, int GroupFlag, int ReportOnSupplierOnly, string DateType, int GroupByLoc, string Location)
+        {
+            string connectionString = "Server=" + SQLServerName + ";Database=" + Database + ";Integrated Security=SSPI;";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                //connection.Open();
+                //SQL Server procedure to execute
+                //e.g. EXEC dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
+                //Parameters
+                //@FromDt datetime,
+                //@ToDt datetime,
+	            //@FilterDept varchar(65),
+	            //@TradeType varchar(20),
+	            //@UOM varchar(1),
+	            //@CPID varchar(12),	
+	            //@GroupFlag bit,
+                //@ReportOnSupplierOnly bit = 0,
+	            //@DateType char(4) = 'POST',
+	            //@GroupByLoc bit = 0,
+                //@Location char(50) = ''
+
+                await connection.OpenAsync();
+                SqlCommand sql_cmnd = new SqlCommand(ProcName, connection)
+                {
+                    CommandType = CommandType.StoredProcedure,
+
+                    //sql_cmnd.CommandText = "msdb.dbo.sp_start_job";
+
+                    CommandTimeout = 600 //Maybe increased as database tables grow
+                };
+
+                sql_cmnd.Parameters.AddWithValue("@FromDt", SqlDbType.VarChar).Value = FromDt;
+                sql_cmnd.Parameters.AddWithValue("@ToDt", SqlDbType.VarChar).Value = ToDt;
+                sql_cmnd.Parameters.AddWithValue("@FilterDept", SqlDbType.VarChar).Value = FilterDept;
+                sql_cmnd.Parameters.AddWithValue("@TradeType", SqlDbType.VarChar).Value = TradeType;
+                sql_cmnd.Parameters.AddWithValue("@UOM", SqlDbType.VarChar).Value = UOM;
+                sql_cmnd.Parameters.AddWithValue("@CPID", SqlDbType.VarChar).Value = CPID;
+                sql_cmnd.Parameters.AddWithValue("@GroupFlag", SqlDbType.Bit).Value = GroupFlag;
+                sql_cmnd.Parameters.AddWithValue("@ReportOnSupplierOnly", SqlDbType.Bit).Value = ReportOnSupplierOnly;
+                sql_cmnd.Parameters.AddWithValue("@DateType", SqlDbType.Char).Value = DateType;
+                sql_cmnd.Parameters.AddWithValue("@GroupByLoc", SqlDbType.Bit).Value = GroupByLoc;
+                sql_cmnd.Parameters.AddWithValue("@Location", SqlDbType.Char).Value = Location;
+
+                //sql_cmnd.Parameters.AddWithValue("@FIRST_NAME", SqlDbType.NVarChar).Value = firstName;
+                //sql_cmnd.Parameters.AddWithValue("@LAST_NAME", SqlDbType.NVarChar).Value = lastName;
+                //sql_cmnd.Parameters.AddWithValue("@AGE", SqlDbType.Int).Value = age;
+
+                await sql_cmnd.ExecuteNonQueryAsync();
+
+                //sql_cmnd.ExecuteNonQuery();
+                //connection.Close();
+            }
+        }
+
+        private static async Task RunStoredProcedureCustomers(string SQLServerName, string Database, string ProcName, string FromDate, string ToDate
+                                                              , string CustID, string TradeType, string CoID
+                                                              , string Product, string salesRep, string UOM
+                                                              , int isdrilldown, string drilldownCust)
+        {
+            string connectionString = "Server=" + SQLServerName + ";Database=" + Database + ";Integrated Security=SSPI;";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                //connection.Open();
+                //e.g. EXEC SQL Server procedure to execute
+                //dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined '', '', '', '', '', '', '', 'L', 0, ''
+                //Parameters
+                //@FromDate datetime = '',
+                //@ToDate datetime = '',
+                //@CustID char(12) = '',  
+                //@TradeType varchar(48) = '',
+                //@CoID varchar(10) = '',
+                //@Product varchar(40) = '',
+                //@salesRep varchar(40) = '',
+                //@UOM char = 'L',
+                //@isdrilldown bit = 0,
+                //@drilldownCust varchar(100) = ''
+
+                await connection.OpenAsync();
+                SqlCommand sql_cmnd = new SqlCommand(ProcName, connection)
+                {
+                    CommandType = CommandType.StoredProcedure,
+
+                    //sql_cmnd.CommandText = "msdb.dbo.sp_start_job";
+
+                    CommandTimeout = 600 //Maybe increased as database tables grow
+                };
+
+                sql_cmnd.Parameters.AddWithValue("@FromDate", SqlDbType.VarChar).Value = FromDate;
+                sql_cmnd.Parameters.AddWithValue("@ToDate", SqlDbType.VarChar).Value = ToDate;
+                sql_cmnd.Parameters.AddWithValue("@CustID", SqlDbType.Char).Value = CustID;
+                sql_cmnd.Parameters.AddWithValue("@TradeType", SqlDbType.VarChar).Value = TradeType;
+                sql_cmnd.Parameters.AddWithValue("@CoID", SqlDbType.VarChar).Value = CoID;
+                sql_cmnd.Parameters.AddWithValue("@Product", SqlDbType.VarChar).Value = Product;
+                sql_cmnd.Parameters.AddWithValue("@salesRep", SqlDbType.VarChar).Value = salesRep;
+                sql_cmnd.Parameters.AddWithValue("@UOM", SqlDbType.Char).Value = UOM;
+                sql_cmnd.Parameters.AddWithValue("@isdrilldown", SqlDbType.Bit).Value = isdrilldown;
+                sql_cmnd.Parameters.AddWithValue("@drilldownCust", SqlDbType.VarChar).Value = drilldownCust;
 
                 //sql_cmnd.Parameters.AddWithValue("@FIRST_NAME", SqlDbType.NVarChar).Value = firstName;
                 //sql_cmnd.Parameters.AddWithValue("@LAST_NAME", SqlDbType.NVarChar).Value = lastName;
