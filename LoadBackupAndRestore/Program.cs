@@ -73,9 +73,15 @@ namespace LoadBackupAndRestore
             FileStream fs;
             DirectoryInfo di;
 
-            year = DateTime.Today.AddDays(-1).Year.ToString();
-            month = DateTime.Today.AddDays(-1).Month.ToString();
-            day = DateTime.Today.AddDays(-1).Day.ToString();
+            // 12/14/23 Cietrade changed the name of the latest file
+
+            year = DateTime.Today.AddDays(0).Year.ToString();
+            month = DateTime.Today.AddDays(0).Month.ToString();
+            day = DateTime.Today.AddDays(0).Day.ToString();
+
+            //year = DateTime.Today.AddDays(-1).Year.ToString();
+            //month = DateTime.Today.AddDays(-1).Month.ToString();
+            //day = DateTime.Today.AddDays(-1).Day.ToString();
 
             if (month.Length == 1)
                 month = "0" + month;
@@ -221,14 +227,14 @@ namespace LoadBackupAndRestore
                                 RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
 
                                 //Run SQL Server procedure to update table for Suppliers Analysis report - Cietrade part
-                                //RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
-                                //" ", 0, 0, "SHIP", 0, " ").Wait();
+                                RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
+                                " ", 0, 0, "SHIP", 0, " ").Wait();
 
                                 //EXEC [dbo].[cw_RptPurchasesBySupplier2CietradeAndWildCombined] '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
 
                                 //Run SQL Server procedure to update table for Customers Analysis report - Cietrade part
-                                //RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
-                                //                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
+                                RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
+                                                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
 
                                 //EXEC dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined '', '', '', '', '', '', '', 'L', 0, ''
 
