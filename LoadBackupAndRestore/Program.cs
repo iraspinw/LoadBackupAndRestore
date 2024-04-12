@@ -228,7 +228,7 @@ namespace LoadBackupAndRestore
 
                                 //Run SQL Server procedure to update table for Suppliers Analysis report - Cietrade part
                                 RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
-                                " ", 0, 0, "SHIP", 0, " ").Wait();
+                                " ", 0, 0, "POST", 0, " ").Wait();
 
                                 //EXEC [dbo].[cw_RptPurchasesBySupplier2CietradeAndWildCombined] '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
 
@@ -287,6 +287,8 @@ namespace LoadBackupAndRestore
 
             catch (Exception e)
             {
+                SendEmailMessage(smtpserver, FromAddress, ToAddress, port, "The process failed: " + e.ToString()
+                        ,"Error during database restore, tables update. Troubleshoot.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                 Console.WriteLine("The process failed: {0}", e.ToString());
             }
 
