@@ -16,6 +16,7 @@ using System.Net.Mail;
 using System.ComponentModel;
 using Dotmim.Sync.SqlServer;
 using Dotmim.Sync;
+using System.Text.Json;
 
 namespace LoadBackupAndRestore
 {
@@ -26,40 +27,86 @@ namespace LoadBackupAndRestore
         // run on 192.168.1.19 server where cdb_Wilmington (cieTrade database resides)
 
         //public static void Main(string[] args)
+        class MyClass
+        {
+            public string SQLServerName { get; set; }
+            public string DatabaseToRestore { get; set; }
+            public string TargetDatabase { get; set; }
+            public string UtilityName { get; set; }
+            public string BaseFolder { get; set; }
+            public string Backupfolder { get; set; }
+            public string MoveToFolder { get; set; }
+            public string LogsFolder { get; set; }
+            public string EmailsFile { get; set; }
+            public string RunFromFolder { get; set; }
+            public string pattern { get; set; }
+            public string NewFileName { get; set; }
+            public string RestoreDatabaseScriptLocation { get; set; }
+            public string RestoreDatabaseLogFile { get; set; }
+            public string url { get; set; }
+            public string UpdateTablesFromStage { get; set; }
+            public string UpdateTablesFileName { get; set; }
+            public string smtpserver { get; set; }
+
+        }
         static async Task Main()
         {
-            string SQLServerName = "WPGTESTSQL";
-            string DatabaseToRestore = "cdb_Wilmington_stage";  //or "cdb_Wilmington_08_03"; 
-            string TargetDatabase = "cdb_Wilmington";
-            //string TestDatabase = "cdb_Wilmington_Test";
-            string UtilityName = "sqlcmd.exe";
-            string BaseFolder = @"C:\Users\Admin\";
-            string Backupfolder = BaseFolder + @"Downloads\";
-            string MoveToFolder = BaseFolder + @"Archive\";
-            string LogsFolder = BaseFolder + @"Logs\";
-            string EmailsFile = BaseFolder + @"Emails\EmailsList.txt";
+            string filePath = @"C:\WilmingtonPaper\LoadBackupAndRestoreSettings.json";
+            string jsonContent = File.ReadAllText(filePath);
+            var myObject = JsonSerializer.Deserialize<MyClass>(jsonContent);
+
+            string SQLServerName = myObject.SQLServerName; 
+            string DatabaseToRestore = myObject.DatabaseToRestore; 
+            string TargetDatabase = myObject.TargetDatabase; 
+            string UtilityName = myObject.UtilityName; 
+            string BaseFolder = myObject.BaseFolder; 
+            string Backupfolder = myObject.Backupfolder;
+            string MoveToFolder = myObject.MoveToFolder; 
+            string LogsFolder = myObject.LogsFolder; 
+            string EmailsFile = myObject.EmailsFile; 
             //Before running the program, check that this location is accessible via SSMS when trying to restore database interactively, change it accordingly, if needed.
-            string RunFromFolder = @"C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Backup\";
-            string pattern = "*.bak";
-            string NewFileName = RunFromFolder + "cdb_Wilmington_backup.bak";
+            string RunFromFolder = myObject.RunFromFolder; 
+            string pattern = myObject.pattern; //"*.bak";
+            string NewFileName = myObject.NewFileName; 
             //If Backupfolder did not exist and was restored during program execution, copy script file(s) from C:\Users\Admin\ folder (must exist on the PC) before running the program next time
-            string RestoreDatabaseScriptLocation = Backupfolder + "SQLQuerycdb_Wilmington_Database_Restore_Stage.sql"; //"SQLQuerycdb_Wilmington_Database_Restore_Test.sql"; SQLQuerycdb_Wilmington_Database_Restore_Stage.sql
-            string RestoreDatabaseLogFile = LogsFolder + "DatabaseRestoreLog.txt";
-            string url = "https://portals.cietrade.com/WilmingtonGroup/DatabaseBackups/";
-            string UpdateTablesFromStage = Backupfolder + "cdb_Wilmington_TablesUpdate2.sql";
-            string UpdateTablesFileName = BaseFolder + "UpdateTables.bat";
-            string UpdateTablesProcedure = "dbo.UpdateTables";
+            string RestoreDatabaseScriptLocation = myObject.RestoreDatabaseScriptLocation; 
+            string RestoreDatabaseLogFile = myObject.RestoreDatabaseLogFile; 
+            string url = myObject.url; 
+            string UpdateTablesFromStage = myObject.UpdateTablesFromStage; 
+            string UpdateTablesFileName = myObject.UpdateTablesFileName; 
+            string smtpserver = myObject.smtpserver; 
+
+            //string SQLServerName = "WPGTESTSQL";
+            //string DatabaseToRestore = "cdb_Wilmington_stage";  //or "cdb_Wilmington_08_03"; 
+            //string TargetDatabase = "cdb_Wilmington";
+            //string UtilityName = "sqlcmd.exe";
+            //string BaseFolder = @"C:\Users\Admin\";
+            //string Backupfolder = BaseFolder + @"Downloads\";
+            //string MoveToFolder = BaseFolder + @"Archive\";
+            //string LogsFolder = BaseFolder + @"Logs\";
+            //string EmailsFile = BaseFolder + @"Emails\EmailsList.txt";
+            ////Before running the program, check that this location is accessible via SSMS when trying to restore database interactively, change it accordingly, if needed.
+            //string RunFromFolder = @"C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Backup\";
+            //string pattern = "*.bak";
+            //string NewFileName = RunFromFolder + "cdb_Wilmington_backup.bak";
+            ////If Backupfolder did not exist and was restored during program execution, copy script file(s) from C:\Users\Admin\ folder (must exist on the PC) before running the program next time
+            //string RestoreDatabaseScriptLocation = Backupfolder + "SQLQuerycdb_Wilmington_Database_Restore_Stage.sql"; //"SQLQuerycdb_Wilmington_Database_Restore_Test.sql"; SQLQuerycdb_Wilmington_Database_Restore_Stage.sql
+            //string RestoreDatabaseLogFile = LogsFolder + "DatabaseRestoreLog.txt";
+            //string url = "https://portals.cietrade.com/WilmingtonGroup/DatabaseBackups/";
+            //string UpdateTablesFromStage = Backupfolder + "cdb_Wilmington_TablesUpdate2.sql";
+            //string UpdateTablesFileName = BaseFolder + "UpdateTables.bat";
+            //string smtpserver = "wpcdc01.wilmington.local"; //"192.168.1.30";
+
             string CietradeBackupFile;
             string DownloadFileName;
             string BackupFileNameFromPortal;
             int index;
             bool RestoreOK = true;
             string content;
-            string smtpserver = "wpcdc01.wilmington.local"; //"192.168.1.30";
             int port = 25; //587;
             string result;
-            string FromAddress = ""; //e.g. "cdbrestore@wilmingtonpaper.com";
-            string ToAddress; // e.g. "iraspin@wilmingtonpaper.com,jcastoire@recyclingmr.com";
+            string FromAddress = ""; 
+            string ToAddress; 
 
             string CurrentUser = ""; 
             string CurrentPass = ""; 
@@ -224,17 +271,20 @@ namespace LoadBackupAndRestore
                                 //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure);
 
                                 //12/06/23 Update cdb_Wilmington tables from cdb_wilmington_Stage
-                                RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
+                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
+                                //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
 
                                 //Run SQL Server procedure to update table for Suppliers Analysis report - Cietrade part
-                                RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
-                                " ", 0, 0, "POST", 0, " ").Wait();
+                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
+                                //RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
+                                //" ", 0, 0, "POST", 0, " ").Wait();
 
                                 //EXEC [dbo].[cw_RptPurchasesBySupplier2CietradeAndWildCombined] '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
 
                                 //Run SQL Server procedure to update table for Customers Analysis report - Cietrade part
-                                RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
-                                                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
+                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
+                                //RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
+                                //                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
 
                                 //EXEC dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined '', '', '', '', '', '', '', 'L', 0, ''
 
