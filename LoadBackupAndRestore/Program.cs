@@ -107,10 +107,6 @@ namespace LoadBackupAndRestore
             month = DateTime.Today.AddDays(0).Month.ToString();
             day = DateTime.Today.AddDays(0).Day.ToString();
 
-            //year = DateTime.Today.AddDays(-1).Year.ToString();
-            //month = DateTime.Today.AddDays(-1).Month.ToString();
-            //day = DateTime.Today.AddDays(-1).Day.ToString();
-
             if (month.Length == 1)
                 month = "0" + month;
 
