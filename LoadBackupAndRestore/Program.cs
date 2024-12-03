@@ -47,6 +47,8 @@ namespace LoadBackupAndRestore
             public string UpdateTablesFromStage { get; set; }
             public string UpdateTablesFileName { get; set; }
             public string smtpserver { get; set; }
+            public string port { get; set; }
+
 
         }
         static async Task Main()
@@ -74,28 +76,8 @@ namespace LoadBackupAndRestore
             string url = myObject.url; 
             string UpdateTablesFromStage = myObject.UpdateTablesFromStage; 
             string UpdateTablesFileName = myObject.UpdateTablesFileName; 
-            string smtpserver = myObject.smtpserver; 
-
-            //string SQLServerName = "WPGTESTSQL";
-            //string DatabaseToRestore = "cdb_Wilmington_stage";  //or "cdb_Wilmington_08_03"; 
-            //string TargetDatabase = "cdb_Wilmington";
-            //string UtilityName = "sqlcmd.exe";
-            //string BaseFolder = @"C:\Users\Admin\";
-            //string Backupfolder = BaseFolder + @"Downloads\";
-            //string MoveToFolder = BaseFolder + @"Archive\";
-            //string LogsFolder = BaseFolder + @"Logs\";
-            //string EmailsFile = BaseFolder + @"Emails\EmailsList.txt";
-            ////Before running the program, check that this location is accessible via SSMS when trying to restore database interactively, change it accordingly, if needed.
-            //string RunFromFolder = @"C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Backup\";
-            //string pattern = "*.bak";
-            //string NewFileName = RunFromFolder + "cdb_Wilmington_backup.bak";
-            ////If Backupfolder did not exist and was restored during program execution, copy script file(s) from C:\Users\Admin\ folder (must exist on the PC) before running the program next time
-            //string RestoreDatabaseScriptLocation = Backupfolder + "SQLQuerycdb_Wilmington_Database_Restore_Stage.sql"; //"SQLQuerycdb_Wilmington_Database_Restore_Test.sql"; SQLQuerycdb_Wilmington_Database_Restore_Stage.sql
-            //string RestoreDatabaseLogFile = LogsFolder + "DatabaseRestoreLog.txt";
-            //string url = "https://portals.cietrade.com/WilmingtonGroup/DatabaseBackups/";
-            //string UpdateTablesFromStage = Backupfolder + "cdb_Wilmington_TablesUpdate2.sql";
-            //string UpdateTablesFileName = BaseFolder + "UpdateTables.bat";
-            //string smtpserver = "wpcdc01.wilmington.local"; //"192.168.1.30";
+            string smtpserver = myObject.smtpserver;
+            int port = int.Parse(myObject.port);
 
             string CietradeBackupFile;
             string DownloadFileName;
@@ -103,7 +85,6 @@ namespace LoadBackupAndRestore
             int index;
             bool RestoreOK = true;
             string content;
-            int port = 25; //587;
             string result;
             string FromAddress = ""; 
             string ToAddress; 
