@@ -24,7 +24,7 @@ namespace LoadBackupAndRestore
     public class Program
     {
         //To run the program, e.g. issue LoadBackupAndRestore.exe at the command line from the folder where the program resides
-        // run on 192.168.1.19 server where cdb_Wilmington (cieTrade database resides)
+        // run on wpgtestsql server where cdb_Wilmington (cieTrade database resides)
 
         //public static void Main(string[] args)
         class MyClass
@@ -48,10 +48,13 @@ namespace LoadBackupAndRestore
             public string UpdateTablesFileName { get; set; }
             public string smtpserver { get; set; }
             public string port { get; set; }
+            public string RestoreDatabaseDiffScriptLocation { get; set; }
+
+            public string NewFileNameDiff { get; set; }
 
 
         }
-        static async Task Main()
+        static async Task Main(string[] args)
         {
             string filePath = @"C:\WilmingtonPaper\LoadBackupAndRestoreSettings.json";
             string jsonContent = File.ReadAllText(filePath);
@@ -78,6 +81,8 @@ namespace LoadBackupAndRestore
             string UpdateTablesFileName = myObject.UpdateTablesFileName; 
             string smtpserver = myObject.smtpserver;
             int port = int.Parse(myObject.port);
+            string RestoreDatabaseDiffScriptLocation = myObject.RestoreDatabaseDiffScriptLocation;
+            string NewFileNameDiff = myObject.NewFileNameDiff;
 
             string CietradeBackupFile;
             string DownloadFileName;
@@ -97,6 +102,8 @@ namespace LoadBackupAndRestore
             string year;
             string month;
             string day;
+
+            string todaysFileName;
 
             FileStream fs;
             DirectoryInfo di;
@@ -131,7 +138,10 @@ namespace LoadBackupAndRestore
 
             ToAddress = File.ReadAllText(EmailsFile);
 
-            string todaysFileName = "cdb_Wilmington_backup_" + year + "_" + month + "_" + day + "_";
+            todaysFileName = "cdb_Wilmington_backup_" + year + "_" + month + "_" + day + "_" + args[1];
+
+            //e.g. cdb_Wilmington_backup_2025_05_15_040000_5318468.bak - Full Backup at 04:00 AM
+            //     cdb_Wilmington_backup_????_??_??_040000_???????.bak
 
             GetUser(SQLServerName , ref CurrentUser, ref CurrentPass);
 
@@ -188,9 +198,30 @@ namespace LoadBackupAndRestore
 
             using (WebClient webclient = new WebClient())
             {
+                Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName);
                 webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
                 webclient.DownloadFileCompleted += DownloadCompleted;
+                Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName);
             }
+
+            //WebClient webclient = new WebClient();
+            //Uri uri = new Uri(CietradeBackupFile);
+
+            // Call DownloadFileCallback2 when the download completes.
+            //webclient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadFileCallback2);
+
+            // Specify a progress notification handler here ...
+
+            //webclient.DownloadFileAsync(uri, DownloadFileName);
+
+            //webclient.DownloadFile(uri, DownloadFileName);
+
+            //using (WebClient webclient = new WebClient())
+            //{
+            //    Console.WriteLine("Starting download file " + CietradeBackupFile + " into " + DownloadFileName);
+            //    webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
+            //    Console.WriteLine("File downloaded successfully!");
+            //}
 
             //GetCietradeFile(CietradeBackupFile, DownloadFileName, powershell);
 
@@ -226,11 +257,16 @@ namespace LoadBackupAndRestore
                     foreach (string dir in dirs)
                     {
                         //e.g. Backup file name - cdb_Wilmington_backup_2023_08_02_220021_6477080.bak
-
+                        if (args[0] == "F")
                         File.Copy(dir, NewFileName, true); //NewFileName - this is the file to restore the database from
+                        if (args[0] == "D")
+                            File.Copy(dir, NewFileNameDiff, true); //NewFileName - this is the file to restore the database from
 
                         // Do Restore here from NewFileName...
-                        RunScriptToRestoreDatabase(RestoreDatabaseScriptLocation, SQLServerName, UtilityName, RestoreDatabaseLogFile);
+                        if (args[0] == "F")
+                           RunScriptToRestoreDatabase(RestoreDatabaseScriptLocation, SQLServerName, UtilityName, RestoreDatabaseLogFile);
+                        if (args[0] == "D")
+                            RunScriptToRestoreDatabase(RestoreDatabaseDiffScriptLocation, SQLServerName, UtilityName, RestoreDatabaseLogFile);
 
                         // Check database restore on SQL Server
                         RestoreOK = CheckDatabaseRestoreOnSQLServer(SQLServerName, DatabaseToRestore, RestoreOK);
@@ -320,7 +356,20 @@ namespace LoadBackupAndRestore
             }
 
         }
-        
+
+        private static void DownloadFileCallback2(object sender, AsyncCompletedEventArgs e)
+        {
+            if (e.Cancelled)
+            {
+                Console.WriteLine("File download cancelled.");
+            }
+
+            if (e.Error != null)
+            {
+                Console.WriteLine(e.Error.ToString());
+            }
+        }
+
         static void DownloadCompleted(object sender, AsyncCompletedEventArgs e)
         {
             if (e.Error != null)
