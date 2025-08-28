@@ -99,6 +99,8 @@ namespace LoadBackupAndRestore
 
             DateTime localDate;
 
+            DateTime StartDate = DateTime.Now;
+
             string year;
             string month;
             string day;
@@ -183,6 +185,18 @@ namespace LoadBackupAndRestore
                             result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                         return;
                     }
+                    // 6/30/25 - When trying to use http client - number of bytes exceeded allowable
+                    //index = content.IndexOf(todaysFileName);
+
+                    //BackupFileNameFromPortal = content.Substring(index, 47) + ".bak";
+
+                    //CietradeBackupFile = url + BackupFileNameFromPortal;
+
+                    //DownloadFileName = Backupfolder + BackupFileNameFromPortal;
+                    //byte[] fileBytes = await client.GetByteArrayAsync(CietradeBackupFile);
+                    //File.WriteAllBytes(DownloadFileName, fileBytes);
+                    ////await File.WriteAllBytesAsync(DownloadFileName, fileBytes);
+                    //Console.WriteLine("File downloaded successfully.");
                 }
             }
 
@@ -194,14 +208,14 @@ namespace LoadBackupAndRestore
 
             DownloadFileName = Backupfolder + BackupFileNameFromPortal;
 
-            // Get the backup file from Cietrade portal
+            //Get the backup file from Cietrade portal
 
             using (WebClient webclient = new WebClient())
             {
-                Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName);
+                Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName + " at " + DateTime.Now);
                 webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
                 webclient.DownloadFileCompleted += DownloadCompleted;
-                Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName);
+                Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName + " at " + DateTime.Now);
             }
 
             //WebClient webclient = new WebClient();
@@ -304,8 +318,11 @@ namespace LoadBackupAndRestore
                                 //12/05/23
                                 //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
 
+
+                                //StartDate;
+
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
-                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " on " + localDate.ToString() 
+                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
                                     + " and script to update tables in " + TargetDatabase 
                                     + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
