@@ -323,7 +323,7 @@ namespace LoadBackupAndRestore
 
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
                                 result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
-                                    + " and script to update tables in " + TargetDatabase 
+                                    + " (backup file download and restore) and script to update tables in " + TargetDatabase 
                                     + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
                                 sw.Close();
