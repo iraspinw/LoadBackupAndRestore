@@ -321,9 +321,16 @@ namespace LoadBackupAndRestore
 
                                 //StartDate;
 
+                                string detail = "";
+
+                                if (args[0] == "F")
+                                    detail = "(full backup file download and full backup restore)";
+                                else 
+                                    detail = "(differential backup file download and differential backup restore)";
+
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
                                 result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
-                                    + " (backup file download and restore) and script to update tables in " + TargetDatabase 
+                                    + " " + detail + " and script to update tables in " + TargetDatabase 
                                     + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
                                 sw.Close();
