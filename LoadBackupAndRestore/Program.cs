@@ -157,7 +157,7 @@ namespace LoadBackupAndRestore
                     {
                         using StreamWriter sw = File.AppendText(RestoreDatabaseLogFile);
                         {
-                            result = "\n" + url + "is not available on " + DateTime.Now.ToString() + "Check portal, contact Cietrade if needed.";
+                            result = "\n" + url + " is not available on " + DateTime.Now.ToString() + ". Check portal, contact Cietrade if needed.";
                             Console.WriteLine(result);
                             sw.WriteLine(result);
                             sw.Close();
