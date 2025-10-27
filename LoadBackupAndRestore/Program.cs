@@ -328,15 +328,25 @@ namespace LoadBackupAndRestore
                                 else 
                                     detail = "(differential backup file download and differential backup restore)";
 
+                                FileInfo fileInfo = new FileInfo(CietradeBackupFile);
+
+                                // Get file size in bytes
+                                long fileSizeInBytes = fileInfo.Length;
+
+                                // Convert to MB
+                                double fileSizeInMB = fileSizeInBytes / (1024.0 * 1024.0);
+
+                                //" (file size: " + fileSizeInMB.ToString() + " MB)"
+
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
-                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
+                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " (file size: " + fileSizeInMB.ToString() + " MB)"+ " between " + StartDate.ToString() + " and " + localDate.ToString() 
                                     + " " + detail + " and script to update tables in " + TargetDatabase 
                                     + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
                                 sw.Close();
 
                                 SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore success", 
-                                    result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+                                    result + "\nSee attached.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                             }
                             else 
                             {
