@@ -110,6 +110,8 @@ namespace LoadBackupAndRestore
             FileStream fs;
             DirectoryInfo di;
 
+            long fileSize;
+
             // 12/14/23 Cietrade changed the name of the latest file
 
             year = DateTime.Today.AddDays(0).Year.ToString();
@@ -165,11 +167,14 @@ namespace LoadBackupAndRestore
 
                         SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore error"
                         , result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
-
                         return;
                     }
+
                     response.EnsureSuccessStatusCode();
                     content = await response.Content.ReadAsStringAsync();
+
+                    //long? size = response.Content.Headers.ContentLength.Value;
+                    //Console.WriteLine("File size is: " + size.ToString());
 
                     if (!content.Contains(todaysFileName))
                     {
@@ -185,18 +190,6 @@ namespace LoadBackupAndRestore
                             result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                         return;
                     }
-                    // 6/30/25 - When trying to use http client - number of bytes exceeded allowable
-                    //index = content.IndexOf(todaysFileName);
-
-                    //BackupFileNameFromPortal = content.Substring(index, 47) + ".bak";
-
-                    //CietradeBackupFile = url + BackupFileNameFromPortal;
-
-                    //DownloadFileName = Backupfolder + BackupFileNameFromPortal;
-                    //byte[] fileBytes = await client.GetByteArrayAsync(CietradeBackupFile);
-                    //File.WriteAllBytes(DownloadFileName, fileBytes);
-                    ////await File.WriteAllBytesAsync(DownloadFileName, fileBytes);
-                    //Console.WriteLine("File downloaded successfully.");
                 }
             }
 
@@ -213,31 +206,18 @@ namespace LoadBackupAndRestore
             using (WebClient webclient = new WebClient())
             {
                 Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName + " at " + DateTime.Now);
+                webclient.OpenRead(CietradeBackupFile);
+                fileSize = Convert.ToInt64(webclient.ResponseHeaders["Content-Length"])/1024/1024;
+
+                //Console.WriteLine($"File size: {fileSize} GB");
+
+                Console.WriteLine("File size: " + fileSize.ToString() + " GB");
+
                 webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
                 webclient.DownloadFileCompleted += DownloadCompleted;
                 Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName + " at " + DateTime.Now);
             }
 
-            //WebClient webclient = new WebClient();
-            //Uri uri = new Uri(CietradeBackupFile);
-
-            // Call DownloadFileCallback2 when the download completes.
-            //webclient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadFileCallback2);
-
-            // Specify a progress notification handler here ...
-
-            //webclient.DownloadFileAsync(uri, DownloadFileName);
-
-            //webclient.DownloadFile(uri, DownloadFileName);
-
-            //using (WebClient webclient = new WebClient())
-            //{
-            //    Console.WriteLine("Starting download file " + CietradeBackupFile + " into " + DownloadFileName);
-            //    webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
-            //    Console.WriteLine("File downloaded successfully!");
-            //}
-
-            //GetCietradeFile(CietradeBackupFile, DownloadFileName, powershell);
 
             try
             {
@@ -269,6 +249,7 @@ namespace LoadBackupAndRestore
                 if (dirs.Length == 1)
                 {
                     foreach (string dir in dirs)
+
                     {
                         //e.g. Backup file name - cdb_Wilmington_backup_2023_08_02_220021_6477080.bak
                         if (args[0] == "F")
@@ -291,55 +272,15 @@ namespace LoadBackupAndRestore
                         {
                             if (RestoreOK)
                             {
-                                //12/06/23
-                                //RunUpdateTablesFromStage(UpdateTablesFromStage, SQLServerName, UtilityName);
-                                //
-
-                                //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure);
-
-                                //12/06/23 Update cdb_Wilmington tables from cdb_wilmington_Stage
-                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
-                                //RunStoredProcedure(SQLServerName, TargetDatabase, UpdateTablesProcedure).Wait();
-
-                                //Run SQL Server procedure to update table for Suppliers Analysis report - Cietrade part
-                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
-                                //RunStoredProcedureSuppliers(SQLServerName, TargetDatabase, "dbo.cw_RptPurchasesBySupplier2CietradeAndWildCombined", " ", " ", " ", " ", "S",
-                                //" ", 0, 0, "POST", 0, " ").Wait();
-
-                                //EXEC [dbo].[cw_RptPurchasesBySupplier2CietradeAndWildCombined] '', '', '', '', 'S', '', 0, 0, 'SHIP', 0, ''
-
-                                //Run SQL Server procedure to update table for Customers Analysis report - Cietrade part
-                                //5/18/24 Runs as a part of a job (Update tables off WPGTESTSQL
-                                //RunStoredProcedureCustomers(SQLServerName, TargetDatabase, "dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined", " ", " "
-                                //                              , " ", " ", " ", " ", " ", "L", 0, " ").Wait();
-
-                                //EXEC dbo.cw_SalesByCustomerProduct2CietradeAndWildCombined '', '', '', '', '', '', '', 'L', 0, ''
-
-                                //12/05/23
-                                //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
-
-
-                                //StartDate;
-
                                 string detail = "";
 
                                 if (args[0] == "F")
-                                    detail = "(full backup file download and full backup restore)";
+                                    detail = "(full backup file download and full backup restore)" + ", File size: " + fileSize.ToString() + " GB";
                                 else 
-                                    detail = "(differential backup file download and differential backup restore)";
-
-                                FileInfo fileInfo = new FileInfo(CietradeBackupFile);
-
-                                // Get file size in bytes
-                                long fileSizeInBytes = fileInfo.Length;
-
-                                // Convert to MB
-                                double fileSizeInMB = fileSizeInBytes / (1024.0 * 1024.0);
-
-                                //" (file size: " + fileSizeInMB.ToString() + " MB)"
+                                    detail = "(differential backup file download and differential backup restore)" + ", File size: " + fileSize.ToString() + " GB";
 
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
-                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " (file size: " + fileSizeInMB.ToString() + " MB)"+ " between " + StartDate.ToString() + " and " + localDate.ToString() 
+                                result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
                                     + " " + detail + " and script to update tables in " + TargetDatabase 
                                     + " is going to run separately. You may receive a notification, if error occurred." ;
                                 sw.WriteLine(result);
