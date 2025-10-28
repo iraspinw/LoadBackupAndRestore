@@ -275,9 +275,9 @@ namespace LoadBackupAndRestore
                                 string detail = "";
 
                                 if (args[0] == "F")
-                                    detail = "(full backup file download and full backup restore)" + ", File size: " + fileSize.ToString() + " GB";
+                                    detail = "(full backup file download and full backup restore" + ", file size is " + fileSize.ToString() + " GB)";
                                 else 
-                                    detail = "(differential backup file download and differential backup restore)" + ", File size: " + fileSize.ToString() + " GB";
+                                    detail = "(differential backup file download and differential backup restore" + ", file size is " + fileSize.ToString() + " GB)";
 
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
                                 result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
