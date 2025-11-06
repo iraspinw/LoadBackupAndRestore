@@ -288,6 +288,11 @@ namespace LoadBackupAndRestore
 
                                 SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore success", 
                                     result + "\nSee attached.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+
+                                if (args[0] == "D")
+                                    //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
+                                    RunSQLServerJob("cdb_Wilmington Update Tables", SQLServerName);
+
                             }
                             else 
                             {
@@ -394,14 +399,13 @@ namespace LoadBackupAndRestore
         }
 
         static void RunUpdateTablesFromStage2(string server, string UtilityName, string TargetDatabase)
-        //static void RunUpdateTablesFromStage2(string UpdateTablesFileName)
         {
             using (Process RestoreDatabase = new Process())
             {
                 //sqlcmd -E -S WPGTESTSQL -d cdb_Wilmington -Q "EXEC dbo.UpdateTables"
                 //UpdateTablesFileName
                 // " -E -S " + server + " -d " + TargetDatabase + " -Q " + @"""EXEC dbo.UpdateTables""";
-                string arguments = " -E -S " + server + " -d " + TargetDatabase + " -Q " + @"""EXEC dbo.UpdateTables""";
+                string arguments = " -E -S " + server + " -d " + TargetDatabase + " -Q " + @"""EXEC dbo.UpdateTables2""";
                 RestoreDatabase.StartInfo.FileName = UtilityName; // UpdateTablesFileName;
                 RestoreDatabase.StartInfo.Arguments = arguments; 
                 RestoreDatabase.StartInfo.UseShellExecute = false;
@@ -511,6 +515,58 @@ namespace LoadBackupAndRestore
                 Console.WriteLine("Exception caught in SendEmailMessage: {0}", ex.ToString());
             }
         }
+
+        public static void RunSQLServerJob(string jobName, string SQLServerName)
+        {
+            string connectionString = "Server=" + SQLServerName + ";Database=msdb; Integrated Security=SSPI;";
+            //"Server=your_server;Database=msdb;User Id=your_user;Password=your_password;";
+            //string jobName = "cdb_Wilmington Update Tables";
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // Start the job
+                    using (SqlCommand startJobCommand = new SqlCommand("msdb.dbo.sp_start_job", connection))
+                    {
+                        startJobCommand.CommandType = System.Data.CommandType.StoredProcedure;
+                        startJobCommand.Parameters.AddWithValue("@job_name", jobName);
+                        startJobCommand.ExecuteNonQuery();
+                        Console.WriteLine($"Job '{jobName}' started successfully.");
+                    }
+
+                    // Optionally, monitor the job's status
+                    //string query = @"
+                    //SELECT TOP 1 run_status, run_date, run_time
+                    //FROM msdb.dbo.sysjobhistory
+                    //WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = @job_name)
+                    //ORDER BY run_date DESC, run_time DESC";
+
+                    //using (SqlCommand statusCommand = new SqlCommand(query, connection))
+                    //{
+                    //    statusCommand.Parameters.AddWithValue("@job_name", jobName);
+                    //    using (SqlDataReader reader = statusCommand.ExecuteReader())
+                    //    {
+                    //        if (reader.Read())
+                    //        {
+                    //            int runStatus = reader.GetInt32(0);
+                    //            Console.WriteLine($"Job Status: {(runStatus == 1 ? "Succeeded" : "Failed/Unknown")}");
+                    //        }
+                    //        else
+                    //        {
+                    //            Console.WriteLine("No job history found.");
+                    //        }
+                    //    }
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+
         public static async Task SyncTablesAsync(string SQLServerName, string DatabaseToRestore, string TargetDatabase)
         {
             int arrayLength = 0;
@@ -692,6 +748,8 @@ namespace LoadBackupAndRestore
                 //sql_cmnd.ExecuteNonQuery();
                 //connection.Close();
             }
+
+            
         }
     }
 }
