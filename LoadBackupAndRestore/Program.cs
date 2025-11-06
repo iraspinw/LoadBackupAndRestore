@@ -111,12 +111,42 @@ namespace LoadBackupAndRestore
             DirectoryInfo di;
 
             long fileSize;
+            bool Canrundifferentialbackup = true;
 
             // 12/14/23 Cietrade changed the name of the latest file
 
             year = DateTime.Today.AddDays(0).Year.ToString();
             month = DateTime.Today.AddDays(0).Month.ToString();
             day = DateTime.Today.AddDays(0).Day.ToString();
+
+            string FullBackupFileName = @NewFileName;
+            FileInfo fileInfo = new FileInfo(FullBackupFileName);
+
+            if (args[0] == "D")
+            {
+                if (File.Exists(FullBackupFileName))
+                {
+                    {
+                        if (DateTime.Today.ToString("MM/dd/yyyy") == fileInfo.LastAccessTime.ToString("MM/dd/yyyy"))
+                        {
+                            Console.WriteLine("Today Full Backup file exists.");
+                            Console.WriteLine("Can run diffrential backup");
+                        }
+                        else
+                        {
+                            Canrundifferentialbackup = false;
+                            Console.WriteLine("Today Full Backup file does not exist.");
+                            Console.WriteLine("Can run diffrential backup");
+                        }
+                    }
+                }
+                else
+                {
+                    Canrundifferentialbackup = false;
+                    Console.WriteLine("Today Full Backup file does not exist.");
+                    Console.WriteLine("Cannot run diffrential backup");
+                }
+            }
 
             if (month.Length == 1)
                 month = "0" + month;
@@ -150,6 +180,14 @@ namespace LoadBackupAndRestore
             GetUser(SQLServerName , ref CurrentUser, ref CurrentPass);
 
             FromAddress = CurrentUser;
+
+            if (args[0] == "D")
+            {
+                if (Canrundifferentialbackup == false)
+                    SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore error"
+                    , "Differential backup cannot run, no today full backup is available" + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+                return;
+            }
 
             using HttpClient client = new HttpClient();
             {
@@ -282,7 +320,7 @@ namespace LoadBackupAndRestore
                                 sw.WriteLine("File: {0} was downloaded to: {1}", CietradeBackupFile, DownloadFileName);
                                 result = DatabaseToRestore + " database was restored from " + CietradeBackupFile + " between " + StartDate.ToString() + " and " + localDate.ToString() 
                                     + " " + detail + " and script to update tables in " + TargetDatabase 
-                                    + " is going to run separately. You may receive a notification, if error occurred." ;
+                                    + " is going to run separately. You may receive a notification when it is completed or if error occurred." ;
                                 sw.WriteLine(result);
                                 sw.Close();
 
