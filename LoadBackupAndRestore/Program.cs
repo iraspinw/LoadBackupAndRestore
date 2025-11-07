@@ -184,9 +184,11 @@ namespace LoadBackupAndRestore
             if (args[0] == "D")
             {
                 if (Canrundifferentialbackup == false)
+                {
                     SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore error"
                     , "Differential backup cannot run, no today full backup is available" + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
-                return;
+                    return;
+                }
             }
 
             using HttpClient client = new HttpClient();
