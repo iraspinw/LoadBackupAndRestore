@@ -186,7 +186,7 @@ namespace LoadBackupAndRestore
                 if (Canrundifferentialbackup == false)
                 {
                     SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore error"
-                    , "Differential backup cannot run, no today full backup is available" + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+                    , "Differential backup cannot run, no today full backup is available. It may affect custom reporting." + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                     return;
                 }
             }
@@ -220,7 +220,7 @@ namespace LoadBackupAndRestore
                     {
                         using (StreamWriter sw = File.AppendText(RestoreDatabaseLogFile))
                         {
-                            result = "\nThere is no today backup file. Check portal, contact Cietrade if needed. " + DateTime.Today.ToString();
+                            result = "\nThere is no today backup file.It may affect custom reporting. Check portal, contact Cietrade if needed. " + DateTime.Today.ToString();
                             Console.WriteLine(result);
                             sw.WriteLine(result);
                             sw.Close();
