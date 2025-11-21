@@ -329,7 +329,7 @@ namespace LoadBackupAndRestore
                                 SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore success", 
                                     result + "\nSee attached.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
 
-                                if (args[0] == "D")
+                                //if (args[0] == "D")
                                     //RunUpdateTablesFromStage2(SQLServerName, UtilityName, TargetDatabase);
                                     RunSQLServerJob("cdb_Wilmington Update Tables", SQLServerName);
 
