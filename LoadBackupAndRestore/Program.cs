@@ -243,24 +243,21 @@ namespace LoadBackupAndRestore
 
             //Get the backup file from Cietrade portal
 
-            using (WebClient webclient = new WebClient())
-            {
-                Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName + " at " + DateTime.Now);
-                webclient.OpenRead(CietradeBackupFile);
-                fileSize = Convert.ToInt64(webclient.ResponseHeaders["Content-Length"])/1024/1024;
-
-                //Console.WriteLine($"File size: {fileSize} GB");
-
-                Console.WriteLine("File size: " + fileSize.ToString() + " GB");
-
-                webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
-                webclient.DownloadFileCompleted += DownloadCompleted;
-                Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName + " at " + DateTime.Now);
-            }
-
-
             try
-            {
+            { 
+                using (WebClient webclient = new WebClient())
+                {
+                    Console.WriteLine("Started download file " + CietradeBackupFile + " into " + DownloadFileName + " at " + DateTime.Now);
+                    webclient.OpenRead(CietradeBackupFile);
+                    fileSize = Convert.ToInt64(webclient.ResponseHeaders["Content-Length"])/1024/1024;
+                    Console.WriteLine("File size: " + fileSize.ToString() + " GB");
+                    webclient.DownloadFile(CietradeBackupFile, DownloadFileName);
+                    webclient.DownloadFileCompleted += DownloadCompleted;
+                    Console.WriteLine("File " + CietradeBackupFile + " downloaded successfully into " + DownloadFileName + " at " + DateTime.Now);
+                }
+
+                //try
+                //{
                 if (!File.Exists(RestoreDatabaseLogFile))
                 {
                     fs = File.Create(RestoreDatabaseLogFile);
@@ -370,9 +367,14 @@ namespace LoadBackupAndRestore
 
             catch (Exception e)
             {
-                SendEmailMessage(smtpserver, FromAddress, ToAddress, port, "The process failed: " + e.ToString()
-                        ,"Error during database restore, tables update. Troubleshoot.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+                SendEmailMessage(smtpserver, FromAddress, ToAddress, port, "Error in backup download, database restore, tables update application. Troubleshoot."
+                , "The error occurred: " + e.ToString(), RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+
+                //SendEmailMessage(smtpserver, FromAddress, ToAddress, port, "The process failed: " + e.ToString()
+                //        ,"Error during database restore, tables update. Troubleshoot.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+
                 Console.WriteLine("The process failed: {0}", e.ToString());
+                return;
             }
 
         }
