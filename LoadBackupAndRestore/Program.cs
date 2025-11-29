@@ -216,11 +216,16 @@ namespace LoadBackupAndRestore
                     //long? size = response.Content.Headers.ContentLength.Value;
                     //Console.WriteLine("File size is: " + size.ToString());
 
+                    DateTime now = DateTime.Now;
+
+                    // Format to include seconds
+                    string formatted_time = now.ToString("yyyy-MM-dd HH:mm:ss");
+
                     if (!content.Contains(todaysFileName))
                     {
                         using (StreamWriter sw = File.AppendText(RestoreDatabaseLogFile))
                         {
-                            result = "\nThere is no today backup file.It may affect custom reporting. Check portal, contact Cietrade if needed. " + DateTime.Today.ToString();
+                            result = "\nThere is no today backup file.It may affect custom reporting. Check portal, contact Cietrade if needed. " + formatted_time;
                             Console.WriteLine(result);
                             sw.WriteLine(result);
                             sw.Close();
