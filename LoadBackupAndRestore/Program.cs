@@ -136,7 +136,7 @@ namespace LoadBackupAndRestore
                         {
                             Canrundifferentialbackup = false;
                             Console.WriteLine("Today Full Backup file does not exist.");
-                            Console.WriteLine("Can run diffrential backup");
+                            Console.WriteLine("Cannot run diffrential backup");
                         }
                     }
                 }
