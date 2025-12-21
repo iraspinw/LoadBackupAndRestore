@@ -235,7 +235,7 @@ namespace LoadBackupAndRestore
                         }
 
                         SendEmailMessage(smtpserver, FromAddress, ToAddress, port, DatabaseToRestore + " restore error", 
-                            result + "\nSee attached", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
+                            result + "\nSee attached.", RestoreDatabaseLogFile, CurrentUser, CurrentPass);
                         return;
                     }
                 }
