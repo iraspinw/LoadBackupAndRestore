@@ -225,7 +225,10 @@ namespace LoadBackupAndRestore
                     {
                         using (StreamWriter sw = File.AppendText(RestoreDatabaseLogFile))
                         {
-                            result = "\nThere is no today backup file. It may affect custom reporting. Check portal, contact Cietrade if needed. " + formatted_time;
+                            if (args[0] == "D")
+                                result = "\nThere is no latest differential backup file at this time. It may affect custom reporting. Check portal, contact Cietrade if needed. " + formatted_time;
+                            else
+                            result = "\nThere is no today backup file at this time. It may affect custom reporting. Check portal, contact Cietrade if needed. " + formatted_time;
                             Console.WriteLine(result);
                             sw.WriteLine(result);
                             sw.Close();
